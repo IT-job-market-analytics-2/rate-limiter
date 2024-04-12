@@ -2,30 +2,29 @@ package ru.borshchevskiy.ratelimiter.api.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.borshchevskiy.ratelimiter.api.exception.MissingOperationIdException;
-import ru.borshchevskiy.ratelimiter.api.exception.OperationIdNotFoundException;
-
-import java.util.Optional;
+import ru.borshchevskiy.ratelimiter.api.exception.BadRequestException;
+import ru.borshchevskiy.ratelimiter.api.exception.NotFoundException;
 
 @RestController
 public class QuotaController {
 
-    /**
-     * Method handles quota requests for different operations.
-     * Multiple path mappings are required to cover situations when path segment {operation_id} is not present.
-     * In this case request is considered incorrectly formed and
-     * a new {@link MissingOperationIdException MissingOperationIdException} is thrown.
-     * @param operationId id of operation for which quota is requested.
-     * @exception MissingOperationIdException if path segment {operation_id} is missing.
-     */
-    @GetMapping(value = {"/quota", "/quota/", "/quota/{operation_id}"})
+    @GetMapping("/quota/{operation_id}")
     @ResponseStatus(HttpStatus.OK)
-    public void getQuota(@PathVariable(value = "operation_id", required = true) Optional<String> operationId) {
-        String id = operationId.orElseThrow(MissingOperationIdException::new);
-
+    public void getQuota(@PathVariable(value = "operation_id") String operationId) {
         // TODO: test implementation, add logic
-        if (id.equals("test_not_found")) {
-            throw new OperationIdNotFoundException();
+        if (operationId.equals("test_not_found")) {
+            throw new NotFoundException();
         }
+    }
+
+    /**
+     * Method handles quota requests in situations when path segment /{operation_id} is not present.
+     * In this case request is considered incorrectly formed and
+     * a new {@link BadRequestException BadRequestException} is thrown.
+     * @exception BadRequestException if path segment /operation_id} is missing.
+     */
+    @GetMapping(value = {"/quota", "/quota/"})
+    public void getQuota() {
+        throw new BadRequestException();
     }
 }

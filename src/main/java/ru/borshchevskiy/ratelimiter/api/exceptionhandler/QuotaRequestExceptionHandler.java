@@ -5,19 +5,19 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.borshchevskiy.ratelimiter.api.controller.QuotaController;
-import ru.borshchevskiy.ratelimiter.api.exception.MissingOperationIdException;
-import ru.borshchevskiy.ratelimiter.api.exception.OperationIdNotFoundException;
+import ru.borshchevskiy.ratelimiter.api.exception.BadRequestException;
+import ru.borshchevskiy.ratelimiter.api.exception.NotFoundException;
 
 @ControllerAdvice(assignableTypes = QuotaController.class)
 public class QuotaRequestExceptionHandler {
 
-    @ExceptionHandler(value = OperationIdNotFoundException.class)
+    @ExceptionHandler(value = NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void handleOperationIdNotFoundException() {
+    public void handleNotFoundException() {
     }
 
-    @ExceptionHandler(value = MissingOperationIdException.class)
+    @ExceptionHandler(value = BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public void handleMissingOperationIdException() {
+    public void handleBadRequestException() {
     }
 }
