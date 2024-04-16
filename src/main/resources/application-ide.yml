@@ -1,3 +1,4 @@
 rps-quotas:
+  hh-api: 30
   telegram-api: 1
   test: 0.1
