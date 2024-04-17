@@ -12,7 +12,7 @@ public class QuotaProperties {
 
     @Bean
     @ConfigurationProperties(prefix = "rps-quotas")
-    public Map<String, Double> getRpsQuotas() {
+    public Map<String, Long> getRpsQuotas() {
         return new HashMap<>();
     }
 }
