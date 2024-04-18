@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.borshchevskiy.ratelimiter.api.controller.QuotaController;
 import ru.borshchevskiy.ratelimiter.exception.BadRequestException;
 import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
+import ru.borshchevskiy.ratelimiter.exception.QuotaAllocationException;
 
 @ControllerAdvice(assignableTypes = QuotaController.class)
 public class QuotaRequestExceptionHandler {
@@ -19,5 +20,10 @@ public class QuotaRequestExceptionHandler {
     @ExceptionHandler(value = BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleBadRequestException() {
+    }
+
+    @ExceptionHandler(value = QuotaAllocationException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public void handleQuotaAllocationException() {
     }
 }
