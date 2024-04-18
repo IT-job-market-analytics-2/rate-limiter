@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.borshchevskiy.ratelimiter.api.controller.QuotaController;
-import ru.borshchevskiy.ratelimiter.api.exception.BadRequestException;
-import ru.borshchevskiy.ratelimiter.api.exception.NotFoundException;
+import ru.borshchevskiy.ratelimiter.exception.BadRequestException;
+import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
 
 @ControllerAdvice(assignableTypes = QuotaController.class)
 public class QuotaRequestExceptionHandler {

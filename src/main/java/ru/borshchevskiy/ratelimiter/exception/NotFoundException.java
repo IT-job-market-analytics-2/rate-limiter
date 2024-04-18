@@ -1,4 +1,4 @@
-package ru.borshchevskiy.ratelimiter.api.exception;
+package ru.borshchevskiy.ratelimiter.exception;
 
 public class NotFoundException extends RuntimeException{
     public NotFoundException() {

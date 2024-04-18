@@ -5,11 +5,10 @@ import io.github.bucket4j.Bucket;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.borshchevskiy.ratelimiter.api.exception.NotFoundException;
-import ru.borshchevskiy.ratelimiter.service.QuotaAllocationException;
+import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
+import ru.borshchevskiy.ratelimiter.exception.QuotaAllocationException;
 import ru.borshchevskiy.ratelimiter.service.quota.QuotaService;
 
-import javax.naming.ServiceUnavailableException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

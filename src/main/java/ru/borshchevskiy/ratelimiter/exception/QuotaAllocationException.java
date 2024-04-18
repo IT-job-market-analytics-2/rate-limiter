@@ -1,4 +1,4 @@
-package ru.borshchevskiy.ratelimiter.service;
+package ru.borshchevskiy.ratelimiter.exception;
 
 public class QuotaAllocationException extends RuntimeException{
     public QuotaAllocationException() {

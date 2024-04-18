@@ -2,8 +2,8 @@ package ru.borshchevskiy.ratelimiter.api.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.borshchevskiy.ratelimiter.api.exception.BadRequestException;
-import ru.borshchevskiy.ratelimiter.api.exception.NotFoundException;
+import ru.borshchevskiy.ratelimiter.exception.BadRequestException;
+import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
 
 @RestController
 public class QuotaController {
