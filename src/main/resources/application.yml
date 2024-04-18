@@ -1,3 +1,6 @@
 rps-quotas:
   hh-api: 30
   telegram-api: 30
+quota:
+  response:
+    max-wait-time: 10000
