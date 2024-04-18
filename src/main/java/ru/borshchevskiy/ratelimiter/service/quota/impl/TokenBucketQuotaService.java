@@ -13,18 +13,42 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Class provides quotas based on Token Bucket algorithm, which allows throttling
+ * of incoming quota requests. Class depends on Bucket4J's {@link Bucket Bucket} implementation.
+ */
 @Service
 public class TokenBucketQuotaService implements QuotaService {
 
+    /**
+     * Maximum time in milliseconds that thread waits  to get quota from bucket.
+     */
     @Value("${quota.response.max-wait-time:10000}")
     private long maxWaitTimeMillis;
+
+    /**
+     * Map representing id of operation and allowed quota in requests per second.
+     */
     private final Map<String, Long> rpsQuotas;
+
+    /**
+     * Map representing id of operation and Token Bucket which limits the request rate
+     * for this operation.
+     */
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     public TokenBucketQuotaService(Map<String, Long> rpsQuotas) {
         this.rpsQuotas = rpsQuotas;
     }
 
+    /**
+     * Method creates and initializes token buckets for every quota
+     * and putting them in {@link TokenBucketQuotaService#buckets}.
+     * The {@link io.github.bucket4j.BandwidthBuilder.BandwidthBuilderRefillStage#refillGreedy(long, Duration)}
+     * method refills bucket greedily, regenerating tokens as soon as they are available,
+     * not waiting for time limit to regenerate a bunch of tokens at once.
+     * @see Bucket
+     */
     @PostConstruct
     private void initBuckets() {
         for (var entry : rpsQuotas.entrySet()) {
@@ -38,7 +62,26 @@ public class TokenBucketQuotaService implements QuotaService {
         }
     }
 
-    public void consumeQuota(String operationId) {
+    /**
+     * Method consumes quota request <code>operationId</code>, representing by id of required operation.
+     * <p>If requested <code>operationId</code> is presented within available quotas it tries
+     * to acquire a quota from corresponding bucket. Quota allocation algorithm:
+     * <ul>
+     * <li>If quota can be obtained within the time period of {@link TokenBucketQuotaService#maxWaitTimeMillis},
+     * then <code>isQuotaGranted</code> set to <code>true</code> and method returns immediately.</li>
+     * <li>If quota can not be obtained within the time period of {@link TokenBucketQuotaService#maxWaitTimeMillis},
+     * then <code>isQuotaGranted</code> stays set to <code>false</code> and {@link QuotaAllocationException}
+     * is thrown.</li>
+     * <li>In case when thread waiting for quota is interrupted
+     * {@link io.github.bucket4j.BlockingBucket#tryConsume(long, Duration, BlockingStrategy)} throws
+     * {@link InterruptedException}, which is wrapped in {@link QuotaAllocationException}.</li>
+     * </ul>
+     *
+     * </p>
+     * @param operationId id of requested operation.
+     * @throws QuotaAllocationException when quota was not provided.
+     */
+    public void consumeQuotaRequest(String operationId) {
         checkRequest(operationId);
         Bucket bucket = buckets.get(operationId);
         boolean isQuotaGranted;
@@ -47,11 +90,12 @@ public class TokenBucketQuotaService implements QuotaService {
                     .tryConsume(1L, Duration.ofMillis(maxWaitTimeMillis), BlockingStrategy.PARKING);
         } catch (InterruptedException exception) {
             throw new QuotaAllocationException("Failed to provide quota for request " + operationId +
-                    " - thread was interrupted.");
+                    "from bucket " + bucket + ". Reason - thread was interrupted.", exception);
         }
         if (!isQuotaGranted) {
             throw new QuotaAllocationException("Failed to provide quota for request " + operationId +
-                    " - maximum wait time of " + maxWaitTimeMillis + " (milliseconds) was exceeded.");
+                    "from bucket " + bucket +
+                    ". Reason - maximum wait time of " + maxWaitTimeMillis + " (milliseconds) was exceeded.");
         }
     }
 
