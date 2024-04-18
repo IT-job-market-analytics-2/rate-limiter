@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class QuotaPropertiesTest {
 
     @Autowired
-    private Map<String, Double> rpsQuotas;
+    private Map<String, Long> rpsQuotas;
 
     @Test
     @DisplayName("Test that properties are read from .yml file and values are properly mapped")
@@ -29,7 +29,7 @@ class QuotaPropertiesTest {
         assertAll(
                 () ->  assertEquals(30, rpsQuotas.get("hh-api")),
                 () ->  assertEquals(1, rpsQuotas.get("telegram-api")),
-                () ->  assertEquals(0.1, rpsQuotas.get("test"))
+                () ->  assertEquals(1, rpsQuotas.get("test"))
         );
     }
 }
