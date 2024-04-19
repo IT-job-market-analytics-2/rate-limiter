@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
 import ru.borshchevskiy.ratelimiter.exception.QuotaAllocationException;
+import ru.borshchevskiy.ratelimiter.exception.QuotaRequestTimedOutException;
 import ru.borshchevskiy.ratelimiter.service.quota.QuotaService;
 
 import java.time.Duration;
@@ -70,7 +71,7 @@ public class TokenBucketQuotaService implements QuotaService {
      * <li>If quota can be obtained within the time period of {@link TokenBucketQuotaService#maxWaitTimeMillis},
      * then <code>isQuotaGranted</code> set to <code>true</code> and method returns immediately.</li>
      * <li>If quota can not be obtained within the time period of {@link TokenBucketQuotaService#maxWaitTimeMillis},
-     * then <code>isQuotaGranted</code> stays set to <code>false</code> and {@link QuotaAllocationException}
+     * then <code>isQuotaGranted</code> stays set to <code>false</code> and {@link QuotaRequestTimedOutException}
      * is thrown.</li>
      * <li>In case when thread waiting for quota is interrupted
      * {@link io.github.bucket4j.BlockingBucket#tryConsume(long, Duration, BlockingStrategy)} throws
@@ -79,7 +80,8 @@ public class TokenBucketQuotaService implements QuotaService {
      *
      * </p>
      * @param operationId id of requested operation.
-     * @throws QuotaAllocationException when quota was not provided.
+     * @throws QuotaAllocationException when quota was not provided due to thread interruption.
+     * @throws QuotaRequestTimedOutException when quota was not provided due to time out.
      */
     public void consumeQuotaRequest(String operationId) {
         checkRequest(operationId);
@@ -93,7 +95,7 @@ public class TokenBucketQuotaService implements QuotaService {
                     "from bucket " + bucket + ". Reason - thread was interrupted.", exception);
         }
         if (!isQuotaGranted) {
-            throw new QuotaAllocationException("Failed to provide quota for request " + operationId +
+            throw new QuotaRequestTimedOutException("Failed to provide quota for request " + operationId +
                     "from bucket " + bucket +
                     ". Reason - maximum wait time of " + maxWaitTimeMillis + " (milliseconds) was exceeded.");
         }

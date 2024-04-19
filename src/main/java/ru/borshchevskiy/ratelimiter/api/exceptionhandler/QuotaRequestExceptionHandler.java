@@ -8,6 +8,7 @@ import ru.borshchevskiy.ratelimiter.api.controller.QuotaController;
 import ru.borshchevskiy.ratelimiter.exception.BadRequestException;
 import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
 import ru.borshchevskiy.ratelimiter.exception.QuotaAllocationException;
+import ru.borshchevskiy.ratelimiter.exception.QuotaRequestTimedOutException;
 
 @ControllerAdvice(assignableTypes = QuotaController.class)
 public class QuotaRequestExceptionHandler {
@@ -25,5 +26,10 @@ public class QuotaRequestExceptionHandler {
     @ExceptionHandler(value = QuotaAllocationException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public void handleQuotaAllocationException() {
+    }
+
+    @ExceptionHandler(value = QuotaRequestTimedOutException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public void handleQuotaRequestTimedOutException() {
     }
 }

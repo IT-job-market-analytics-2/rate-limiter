@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
 import ru.borshchevskiy.ratelimiter.exception.QuotaAllocationException;
+import ru.borshchevskiy.ratelimiter.exception.QuotaRequestTimedOutException;
 import ru.borshchevskiy.ratelimiter.service.quota.impl.TokenBucketQuotaService;
 
 import java.time.Duration;
@@ -62,7 +63,7 @@ class TokenBucketQuotaServiceTest {
 
     @Test
     @DisplayName("Test service with valid request but no tokens available during maximum wait time" +
-            " - QuotaAllocationException thrown due to time out")
+            " - QuotaRequestTimedOutException thrown due to time out")
     public void testRequestTimeOut() throws InterruptedException {
         final long tokensToConsume = 1L;
         final Bucket mockBucket = Mockito.mock(Bucket.class);
@@ -73,7 +74,7 @@ class TokenBucketQuotaServiceTest {
         when(mockBlockingBucket.tryConsume(tokensToConsume, Duration.ofMillis(MAX_WAIT_TIME_MILLIS),
                 BlockingStrategy.PARKING)).thenReturn(false);
 
-        assertThrows(QuotaAllocationException.class,
+        assertThrows(QuotaRequestTimedOutException.class,
                 () -> tokenBucketQuotaService.consumeQuotaRequest(TEST_OPERATION_1));
     }
 
