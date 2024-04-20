@@ -1,4 +1,4 @@
-package ru.borshchevskiy.ratelimiter.api.exception;
+package ru.borshchevskiy.ratelimiter.exception;
 
 public class BadRequestException extends RuntimeException {
     public BadRequestException() {
