@@ -1,5 +1,7 @@
 package ru.borshchevskiy.ratelimiter.api.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +14,7 @@ import ru.borshchevskiy.ratelimiter.service.quota.QuotaService;
 public class QuotaController {
 
     private final QuotaService tokenBucketQuotaService;
+    private static final  Logger log = LoggerFactory.getLogger(QuotaController.class);
 
     public QuotaController(QuotaService tokenBucketQuotaService) {
         this.tokenBucketQuotaService = tokenBucketQuotaService;
@@ -20,7 +23,9 @@ public class QuotaController {
     @GetMapping("/quota/{operation_id}")
     @ResponseStatus(HttpStatus.OK)
     public void getQuota(@PathVariable(value = "operation_id") String operationId) {
+        log.debug("Received quota request for operation {}.", operationId);
         tokenBucketQuotaService.consumeQuotaRequest(operationId);
+        log.debug("Provided quota for operation {}.", operationId);
     }
 
     /**
@@ -32,6 +37,7 @@ public class QuotaController {
      */
     @GetMapping(value = {"/quota", "/quota/"})
     public void getQuota() {
+        log.debug("Received bad quota request.");
         throw new BadRequestException();
     }
 }

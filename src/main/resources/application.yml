@@ -4,3 +4,8 @@ rps-quotas:
 quota:
   response:
     max-wait-time: 10000
+logging:
+  file:
+    path: logs/
+  level:
+    ru.borshchevskiy.ratelimiter: DEBUG
