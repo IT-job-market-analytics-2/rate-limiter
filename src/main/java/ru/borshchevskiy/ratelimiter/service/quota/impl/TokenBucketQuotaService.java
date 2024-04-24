@@ -3,6 +3,8 @@ package ru.borshchevskiy.ratelimiter.service.quota.impl;
 import io.github.bucket4j.BlockingStrategy;
 import io.github.bucket4j.Bucket;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.borshchevskiy.ratelimiter.exception.NotFoundException;
@@ -41,6 +43,7 @@ public class TokenBucketQuotaService implements QuotaService {
     public TokenBucketQuotaService(Map<String, Long> rpsQuotas) {
         this.rpsQuotas = rpsQuotas;
     }
+    private static final Logger log = LoggerFactory.getLogger(TokenBucketQuotaService.class);
 
     /**
      * Method creates and initializes token buckets for every quota
@@ -52,6 +55,7 @@ public class TokenBucketQuotaService implements QuotaService {
      */
     @PostConstruct
     private void initBuckets() {
+        log.debug("Initializing buckets for operations - {}.", rpsQuotas.keySet());
         for (var entry : rpsQuotas.entrySet()) {
             String operationId = entry.getKey();
             Long rps = entry.getValue();
@@ -60,7 +64,9 @@ public class TokenBucketQuotaService implements QuotaService {
                             .refillGreedy(rps, Duration.ofSeconds(1L)))
                     .build();
             buckets.put(operationId, bucket);
+            log.debug("Initialized bucket for operation {} with {} tokens.", operationId, rps);
         }
+        log.debug("Buckets for operations {} initialized successfully.", rpsQuotas.keySet());
     }
 
     /**
@@ -85,16 +91,20 @@ public class TokenBucketQuotaService implements QuotaService {
      */
     public void consumeQuotaRequest(String operationId) {
         checkRequest(operationId);
+        log.debug("Request operationId is found, trying to get quota.");
         Bucket bucket = buckets.get(operationId);
         boolean isQuotaGranted;
         try {
             isQuotaGranted = bucket.asBlocking()
                     .tryConsume(1L, Duration.ofMillis(maxWaitTimeMillis), BlockingStrategy.PARKING);
         } catch (InterruptedException exception) {
+            log.error("Failed to provide quota for operationId " + operationId +
+                    " because thread awaiting was interrupted.", exception);
             throw new QuotaAllocationException("Failed to provide quota for request " + operationId +
                     "from bucket " + bucket + ". Reason - thread was interrupted.", exception);
         }
         if (!isQuotaGranted) {
+            log.debug("Failed to provide quota for operayionId {} - too many requests.", operationId);
             throw new QuotaRequestTimedOutException("Failed to provide quota for request " + operationId +
                     "from bucket " + bucket +
                     ". Reason - maximum wait time of " + maxWaitTimeMillis + " (milliseconds) was exceeded.");
@@ -103,6 +113,7 @@ public class TokenBucketQuotaService implements QuotaService {
 
     private void checkRequest(String operationId) {
         if (!rpsQuotas.containsKey(operationId)) {
+            log.debug("Requested operationId {} is not supported.", operationId);
             throw new NotFoundException("Requested operation id " + operationId + " not supported.");
         }
     }

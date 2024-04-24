@@ -1,4 +1,4 @@
-package ru.borshchevskiy.ratelimiter.config.properties;
+package ru.borshchevskiy.ratelimiter.unittests.config.properties;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
