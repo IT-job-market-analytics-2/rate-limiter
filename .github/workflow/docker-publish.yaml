@@ -2,8 +2,7 @@ name: Docker publish
 on:
   push:
     branches:
-      - prod
-      - dev
+      - '*'
 jobs:
   build:
     runs-on: ubuntu-latest
