@@ -31,5 +31,5 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          tags: ${{ GITHUB_REF_NAME }}
+          tags: $GITHUB_REF_NAME
           push: true
