@@ -2,10 +2,23 @@ name: Docker publish
 on:
   push:
     branches:
-      - prod
-      - dev
+      - '*'
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Run tests
+        run: mvn test
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,5 +45,5 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          tags: ${{ GITHUB_REF_NAME }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/rate-limiter:${{ github.ref_name }}
           push: true
