@@ -1,0 +1,3 @@
+rps-quotas:
+  hh-api: 10
+  telegram-api: 10
